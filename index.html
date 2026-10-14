@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <title>My Translator AI</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #f4f5ff;
+      background: radial-gradient(circle at top left, #25204f, #0b1020 55%);
+    }
+
+    .container {
+      width: min(1000px, 92%);
+      margin: auto;
+      padding: 42px 0;
+    }
+
+    header { text-align: center; margin-bottom: 30px; }
+
+    .logo {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid #5147a5;
+      border-radius: 30px;
+      color: #b9b2ff;
+      background: #171932;
+      font-size: 14px;
+    }
+
+    h1 { font-size: clamp(32px, 6vw, 52px); margin: 20px 0 10px; }
+    h1 span { color: #a89bff; }
+    header p { color: #b8bfd4; line-height: 1.6; }
+
+    .panel {
+      padding: 25px;
+      background: rgba(19, 25, 48, .92);
+      border: 1px solid #303957;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px #0003;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    textarea, select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #384361;
+      background: #0d1428;
+      color: #fff;
+      font: inherit;
+      outline: none;
+    }
+
+    textarea { min-height: 170px; resize: vertical; line-height: 1.6; }
+    textarea:focus, select:focus { border-color: #9b8cff; }
+    .settings { margin-top: 20px; }
+
+    .options {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      color: #c3c9dc;
+    }
+
+    .options label { margin: 0; font-weight: normal; }
+    .options input { accent-color: #a89bff; }
+
+    .buttons { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+
+    button {
+      padding: 13px 19px;
+      border: 0;
+      border-radius: 11px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .primary { color: #fff; background: linear-gradient(120deg, #7765ef, #a15bea); }
+    .secondary { color: #e2e5f5; background: #28314c; }
+    button:disabled { opacity: .6; cursor: wait; }
+
+    #status { margin-top: 16px; color: #b7c3e0; line-height: 1.5; }
+
+    .results { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .result-card {
+      min-width: 0;
+      padding: 18px;
+      background: #11182d;
+      border: 1px solid #303957;
+      border-radius: 15px;
+    }
+
+    .result-card h2 { font-size: 16px; margin: 0 0 12px; color: #bcb2ff; }
+    .result-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+    .copy { margin-top: 15px; padding: 9px 12px; font-size: 13px; }
+    .hidden { display: none; }
+
+    footer { text-align: center; color: #8e99b7; font-size: 13px; padding: 25px 0; }
+
+    @media (max-width: 650px) {
+      .results { grid-template-columns: 1fr; }
+      .panel { padding: 18px; }
+      .container { padding-top: 25px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <div class="logo">✦ AI-Powered Language Assistant</div>
+      <h1>My Translator <span>AI</span></h1>
+      <p>Translate English into natural Urdu with AI.<br>
+        Get Roman Urdu, back translation, and explanations.</p>
+    </header>
+
+    <section class="panel">
+      <label for="sourceText">Enter English text</label>
+      <textarea id="sourceText" maxlength="10000"
+        placeholder="Example: Education is the key to success."></textarea>
+      <div id="counter" style="text-align:right;color:#8e99b7;font-size:12px;margin-top:7px">
+        0 / 10000
+      </div>
+
+      <div class="settings">
+        <label for="style">Translation style</label>
+        <select id="style">
+          <option>Natural Urdu</option>
+          <option>Formal Urdu</option>
+          <option>Casual Urdu</option>
+          <option>Professional / Business Urdu</option>
+          <option>Simple Urdu for Beginners</option>
+        </select>
+      </div>
+
+      <div class="options">
+        <input type="checkbox" id="explain" checked>
+        <label for="explain">Include translation explanation</label>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" id="translateBtn">✦ Translate Text</button>
+        <button class="secondary" id="clearBtn">Clear</button>
+      </div>
+
+      <div id="status" role="status" aria-live="polite"></div>
+
+      <div id="results" class="results hidden">
+        <article class="result-card">
+          <h2>اردو ترجمہ — Urdu Translation</h2>
+          <div class="result-text" id="urdu"></div>
+          <button class="secondary copy" data-copy="urdu">Copy translation</button>
+        </article>
+
+        <article class="result-card">
+          <h2>Roman Urdu</h2>
+          <div class="result-text" id="roman"></div>
+          <button class="secondary copy" data-copy="roman">Copy Roman Urdu</button>
+        </article>
+
+        <article class="result-card">
+          <h2>Back Translation</h2>
+          <div class="result-text" id="back"></div>
+          <button class="secondary copy" data-copy="back">Copy back translation</button>
+        </article>
+
+        <article class="result-card" id="explanationCard">
+          <h2>Explanation</h2>
+          <div class="result-text" id="explanation"></div>
+          <button class="secondary copy" data-copy="explanation">Copy explanation</button>
+        </article>
+      </div>
+    </section>
+
+    <footer>My Translator AI · Powered by Groq</footer>
+  </main>
+
+  <script>
+    const sourceText = document.getElementById("sourceText");
+    const translateBtn = document.getElementById("translateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusBox = document.getElementById("status");
+    const results = document.getElementById("results");
+
+    sourceText.addEventListener("input", () => {
+      document.getElementById("counter").textContent =
+        `${sourceText.value.length} / 10000`;
+    });
+
+    translateBtn.addEventListener("click", async () => {
+      const text = sourceText.value.trim();
+      const style = document.getElementById("style").value;
+      const explain = document.getElementById("explain").checked;
+
+      if (!text) {
+        statusBox.textContent = "Please enter some English text first.";
+        sourceText.focus();
+        return;
+      }
+
+      translateBtn.disabled = true;
+      translateBtn.textContent = "Translating...";
+      statusBox.textContent = "AI is preparing your translation...";
+      results.classList.add("hidden");
+
+      try {
+        const response = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, style, explain })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Translation failed. Please try again.");
+        }
+
+        document.getElementById("urdu").textContent = data.urdu || "";
+        document.getElementById("roman").textContent = data.roman || "";
+        document.getElementById("back").textContent = data.back || "";
+        document.getElementById("explanation").textContent =
+          data.explanation || "No explanation provided.";
+
+        document.getElementById("explanationCard").classList.toggle(
+          "hidden", !explain
+        );
+
+        results.classList.remove("hidden");
+        statusBox.textContent = "Translation completed successfully.";
+      } catch (error) {
+        statusBox.textContent = error.message ||
+          "Could not connect to the translation service.";
+      } finally {
+        translateBtn.disabled = false;
+        translateBtn.textContent = "✦ Translate Text";
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      sourceText.value = "";
+      document.getElementById("counter").textContent = "0 / 10000";
+      results.classList.add("hidden");
+      statusBox.textContent = "";
+      sourceText.focus();
+    });
+
+    document.querySelectorAll("[data-copy]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const value = document.getElementById(button.dataset.copy).textContent;
+        try {
+          await navigator.clipboard.writeText(value);
+          statusBox.textContent = "Copied to clipboard.";
+        } catch {
+          statusBox.textContent = "Copy failed. Please select and copy the text manually.";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
